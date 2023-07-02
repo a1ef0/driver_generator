@@ -3,9 +3,14 @@ cmake_minimum_required(VERSION 3.13)
 
 project(driver VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+# set(CMAKE_BUILD_TYPE Debug)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 set(proto_name data_transfer_api)
+# set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+# set(CMAKE_C_COMPILER /usr/bin/clang)
 
 # Get proto files
 get_filename_component(proto "../protos/${proto_name}.proto" ABSOLUTE)
@@ -38,3 +43,6 @@ foreach(target ${targets})
     # Cannot do this because these directories are not available during CMake "compile time"
     # target_include_directories(${proto_hdrs} ${grpc_hdrs})
 endforeach()
+
+message(STATUS "copying compile_commands to ../grpc/compile_commands.json")
+file(COPY_FILE ${CMAKE_CURRENT_BINARY_DIR}/../compile_commands.json ${CMAKE_CURRENT_BINARY_DIR}/../../driver_generator/grpc/compile_commands.json ONLY_IF_DIFFERENT)
