@@ -2,6 +2,13 @@
 cmake/
 Debug/
 
+# QtCreator files
+.cache/
+CMakeLists.txt.user
+
+# Cmake auxiliary files
+compile_commands.json
+
 # Prerequisites
 *.d
 
