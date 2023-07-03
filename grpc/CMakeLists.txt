@@ -43,6 +43,11 @@ foreach(target ${targets})
     # Cannot do this because these directories are not available during CMake "compile time"
     # target_include_directories(${proto_hdrs} ${grpc_hdrs})
 endforeach()
+set(CompileCommands "${CMAKE_BINARY_DIR}/compile_commands.json")
 
-message(STATUS "copying compile_commands to ../grpc/compile_commands.json")
-file(COPY_FILE ${CMAKE_CURRENT_BINARY_DIR}/../compile_commands.json ${CMAKE_CURRENT_BINARY_DIR}/../../driver_generator/grpc/compile_commands.json ONLY_IF_DIFFERENT)
+if (EXISTS ${CompileCommands})
+    message("File ${CompileCommands} does not exist")
+else()
+    message(STATUS "copying compile_commands to ../grpc/compile_commands.json")
+    file(COPY_FILE ${CompileCommands} ${CMAKE_BINARY_DIR}/../driver_generator/grpc/compile_commands.json ONLY_IF_DIFFERENT)
+endif()
