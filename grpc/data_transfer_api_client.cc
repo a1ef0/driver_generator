@@ -2,6 +2,7 @@
 #include <chrono>
 #include <thread>
 #include <functional>
+#include <cmath>
 
 #include <grpc++/grpc++.h>
 
@@ -21,14 +22,22 @@ using data_transfer_api::StoreValueRequest;
 class KeyValueService_client {
 public:
     KeyValueService_client (std::shared_ptr<Channel> channel):
-            stub_(KeyValueService::NewStub(channel)) {}
+            stub_(KeyValueService::NewStub(channel)) {
+        auto now = std::chrono::system_clock::now();
+        this->initial_timestamp = now.time_since_epoch().count();
+    }
 
-    std::string store_value(const std::string& key, const std::string& payload) {
+    std::string store_value(const std::string& key) {
 
         StoreValueRequest request;
 
         Value* val = new Value();
-        val->set_payload(payload);
+        auto now = std::chrono::system_clock::now();
+        double timestamp = now.time_since_epoch().count() -
+                           this->initial_timestamp;
+        std::cout << timestamp << std::endl;
+        double sin_value = sin(timestamp);
+        val->set_payload(std::to_string(sin_value));
 
         request.set_allocated_value(val);
         request.set_key(key);
@@ -51,6 +60,8 @@ public:
     }
 
 private:
+    double initial_timestamp;
+    // const double pi = std::numbers::pi;
     std::unique_ptr<KeyValueService::Stub> stub_;
 };
 
@@ -71,7 +82,7 @@ void driver_generate(long rps) {
                                 grpc::InsecureChannelCredentials()));
     double interval = 1000 / rps;
     timer_start([&client](){
-        client.store_value("123", "payload");
+        client.store_value("123");
     }
     , interval);
     while (true);
