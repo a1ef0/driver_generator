@@ -68,20 +68,19 @@ private:
 
 void timer_start(std::function<void(void)> func, unsigned int interval) {
 std::thread([func, interval]() {
-        while (true)
-        {
-            func();
-            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        }
+    while (true) {
+        func();
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+    }
     }).detach();
 }
 
-void driver_generate(long rps) {
+void driver_generate(unsigned int rps) {
     const char* SERVER_ADDR = "127.0.0.1:1234";
     KeyValueService_client client(grpc::CreateChannel(SERVER_ADDR,
                                 grpc::InsecureChannelCredentials()));
-    double interval = 1000 / rps;
-    timer_start([&client](){
+    unsigned int interval = 1000 / rps;
+    timer_start([&client]() -> void {
         client.store_value("123");
     }
     , interval);
