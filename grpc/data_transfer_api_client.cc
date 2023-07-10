@@ -29,9 +29,8 @@ public:
         this->initial_timestamp = now.time_since_epoch().count();
     }
 
-    std::string store_value(const std::string& key) {
-
-        SNMPClient("vps", "public").send_request();
+    std::string store_value(const std::string& key, const std::string& ip) {
+        SNMPClient(ip, "public").send_request();
 
         StoreValueRequest request;
 
@@ -79,13 +78,13 @@ std::thread([func, interval]() {
     }).detach();
 }
 
-void driver_generate(unsigned int rps) {
+void driver_generate(unsigned int rps, const std::string& ip) {
     const char* SERVER_ADDR = "127.0.0.1:1234";
     KeyValueService_client client(grpc::CreateChannel(SERVER_ADDR,
                                 grpc::InsecureChannelCredentials()));
     unsigned int interval = 1000 / rps;
-    timer_start([&client]() -> void {
-        client.store_value("123");
+    timer_start([&client, &ip]() -> void {
+        client.store_value("123", ip);
     }
     , interval);
     while (true);
@@ -93,13 +92,14 @@ void driver_generate(unsigned int rps) {
 
 int main(int argc, char** argv) {
 
-    if (argc != 2) {
+    if (argc != 3) {
         std::cout << "Usage: " << argv[0] << " <requests per second>"
                   << std::endl;
         return 0;
     }
     long rps = std::stol(argv[1]);
-    driver_generate(rps);
+    std::string ip = argv[2];
+    driver_generate(rps, ip);
 
     return 0;
 }
