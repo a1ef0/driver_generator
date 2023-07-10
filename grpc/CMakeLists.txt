@@ -12,6 +12,7 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 set(proto_name data_transfer_api)
 # set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 # set(CMAKE_C_COMPILER /usr/bin/clang)
+# message("${CMAKE_CURRENT_SOURCE_DIR}/../snmp/")
 
 # Get proto files
 get_filename_component(proto "../protos/${proto_name}.proto" ABSOLUTE)
@@ -36,10 +37,9 @@ add_custom_command(
 set(targets "${proto_name}_client")
 
 # Include generated *.pb.h files
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../snmp/)
 foreach(target ${targets})
-    add_executable(${target} "${target}.cc" ${proto_srcs} ${grpc_srcs} ../snmp/SNMPClient.cpp ../snmp/SNMPClient.h)
+    add_executable(${target} "${target}.cc" ${proto_srcs} ${grpc_srcs} ../snmp/SNMPClient.cc ../snmp/SNMPClient.h)
     target_link_libraries(${target} PRIVATE ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${NETSNMP})
     # Cannot do this because these directories are not available during CMake "compile time"
     # target_include_directories(${proto_hdrs} ${grpc_hdrs})

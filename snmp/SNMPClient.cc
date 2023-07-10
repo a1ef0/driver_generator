@@ -4,13 +4,23 @@
 
 #include "SNMPClient.h"
 
-SNMPClient::SNMPClient() {
+SNMPClient::SNMPClient(const std::string& peer_name,
+                       const std::string& community_name) {
+    init_snmp("snmp_driver");
 
-    netsnmp_session session;
-    netsnmp_session *ss;
-    netsnmp_pdu *pdu;
-    netsnmp_pdu *response;
+    snmp_sess_init(&session);
+    session.peername = strdup(peer_name.c_str());
 
+    session.version = SNMP_VERSION_1;
+
+    session.community = (u_char *) community_name.c_str();
+    session.community_len = strlen(
+            reinterpret_cast<const char *>(session.community));
+}
+
+
+void
+SNMPClient::send_request(const std::string& oid_string) {
     oid anOID[MAX_OID_LEN];
     size_t anOID_len;
 
@@ -18,65 +28,29 @@ SNMPClient::SNMPClient() {
     int status;
     int count = 1;
 
-    /*
-     * Initialize the SNMP library
-     */
-    init_snmp("snmp_driver");
-
-    /*
-     * Initialize a "session" that defines who we're going to talk to
-     */
-    snmp_sess_init(&session);                   /* set up defaults */
-    session.peername = strdup("vps");
-
-
-    /* set the SNMP version number */
-    session.version = SNMP_VERSION_1;
-
-    /* set the SNMPv1 community name used for authentication */
-    session.community = (u_char *) "public";
-    session.community_len = strlen(
-            reinterpret_cast<const char *>(session.community));
-
-    /*
-     * Open the session
-     */
-    ss = snmp_open(&session);                     /* establish the session */
+    ss = snmp_open(&session);
 
     if (!ss) {
         snmp_sess_perror("ack", &session);
         exit(1);
     }
 
-    /*
-     * Create the PDU for the data for our request.
-     *   1) We're going to GET the system.sysDescr.0 node.
-     */
     pdu = snmp_pdu_create(SNMP_MSG_GET);
     anOID_len = MAX_OID_LEN;
-    if (!snmp_parse_oid(".1.3.6.1.2.1.1.1.0", anOID, &anOID_len)) {
-        snmp_perror(".1.3.6.1.2.1.1.1.0");
+
+    if (!snmp_parse_oid(oid_string.c_str(), anOID, &anOID_len)) {
+        snmp_perror(oid_string.c_str());
         exit(1);
     }
     snmp_add_null_var(pdu, anOID, anOID_len);
 
-    /*
-     * Send the Request out.
-     */
     status = snmp_synch_response(ss, pdu, &response);
 
-    /*
-     * Process the response.
-     */
     if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR) {
-        /*
-         * SUCCESS: Print the result variables
-         */
 
         for(vars = response->variables; vars; vars = vars->next_variable)
             print_variable(vars->name, vars->name_length, vars);
 
-        /* manipuate the information ourselves */
         for(vars = response->variables; vars; vars = vars->next_variable) {
             if (vars->type == ASN_OCTET_STR) {
                 char *sp = (char *)malloc(1 + vars->val_len);
@@ -89,10 +63,6 @@ SNMPClient::SNMPClient() {
                 printf("value #%d is NOT a string! Ack!\n", count++);
         }
     } else {
-        /*
-         * FAILURE: print what went wrong!
-         */
-
         if (status == STAT_SUCCESS)
             fprintf(stderr, "Error in packet\nReason: %s\n",
                     snmp_errstring(response->errstat));
@@ -100,18 +70,11 @@ SNMPClient::SNMPClient() {
             fprintf(stderr, "Timeout: No response from %s.\n",
                     session.peername);
         else
-            snmp_sess_perror("snmpdemoapp", ss);
-
+            snmp_sess_perror("snmp_driver", ss);
     }
 
-    /*
-     * Clean up:
-     *  1) free the response.
-     *  2) close the session.
-     */
+
     if (response)
         snmp_free_pdu(response);
     snmp_close(ss);
-
 }
-

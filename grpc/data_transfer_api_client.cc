@@ -8,6 +8,8 @@
 
 #include "data_transfer_api.grpc.pb.h"
 
+#include "SNMPClient.h"
+
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
@@ -28,6 +30,8 @@ public:
     }
 
     std::string store_value(const std::string& key) {
+
+        SNMPClient("vps", "public").send_request();
 
         StoreValueRequest request;
 
