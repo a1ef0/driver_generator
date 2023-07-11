@@ -46,12 +46,18 @@ RUN cd /tmp/grpc && \
 
 RUN export PATH="~/.local/bin:$PATH"
 
+# protoc
+RUN apt-get install -y protobuf-compiler
+
 WORKDIR /app
 
 COPY grpc/ ./grpc/
 COPY protos/ ./protos/
 COPY snmp/ ./snmp/
-COPY CMakeLists.txt .
+COPY main.cc .
+COPY CMakeLists.txt ./
 
-RUN cmake -B build -DCMAKE_INSTALL_PREFIX=~/.local/
-RUN cmake --build build --config Release --parallel
+# RUN export CMAKE_PREFIX_PATH=~/.local/include:$CMAKE_PREFIX_PATH
+
+RUN cmake -B build -DCMAKE_INSTALL_PREFIX=~/.local/ -S ./ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-I/root/.local/include"
+RUN cmake --build build --parallel --target driver

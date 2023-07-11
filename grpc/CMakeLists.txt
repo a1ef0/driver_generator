@@ -15,7 +15,7 @@ get_filename_component(proto_dir "${proto}" DIRECTORY)
 # Generate source files
 set(proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.pb.cc")
 set(proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.pb.h")
-set(grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.grpc.pb.cc" key_value_service_client.cc)
+set(grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.grpc.pb.cc")
 set(grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.grpc.pb.h")
 add_custom_command(
     OUTPUT "${proto_srcs}" "${proto_hdrs}" "${grpc_srcs}" "${grpc_hdrs}"
@@ -31,6 +31,6 @@ add_custom_command(
 set(target "key_value_service_client")
 
 # Include generated *.pb.h files
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_library(${target} OBJECT STATIC "${target}.cc" ${proto_srcs} ${grpc_srcs})
 set(_PROTOBUF_INCLUDES ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
-include_directories(${target} INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
