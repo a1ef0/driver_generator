@@ -9,11 +9,21 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <string>
 
+/**
+ * Initializes remote SNMP client handling for further request sending.
+ */
 class SNMPClient {
 public:
     // TODO: add enum for msg_type
     SNMPClient(const std::string& peer_name, const std::string& community_name);
 
+    /**
+     * Send request to a remote SNMP client and retrieve an array of response
+     * strings
+     * @param oid for the SNMP request
+     * @return array of response strings
+     * @throws std::invalid_argument if the oid is invalid
+     */
     std::vector<std::string>
     send_request(const std::string& oid = ".1.3.6.1.2.1.1.1.0");
 private:

@@ -15,13 +15,19 @@ using data_transfer_api::StoreValueRequest;
 
 // link to storage https://github.com/catdog905/distributed_storage
 
+/**
+ * Initializes grpc client and sends rpc function calls to store the data.
+ */
 class KeyValueService_client {
 public:
     KeyValueService_client (std::shared_ptr<Channel>);
 
+    /**
+     * Store a value with the given key into the remote storage. RPC call.
+     * @return string status message
+     */
     std::string store_value(const std::string&, const std::string&);
 
 private:
-    double initial_timestamp;
     std::unique_ptr<KeyValueService::Stub> stub_;
 };
