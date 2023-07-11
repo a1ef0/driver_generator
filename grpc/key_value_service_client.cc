@@ -3,22 +3,16 @@
 //
 #include "key_value_service_client.h"
 
-KeyValueService_client::KeyValueService_client (std::shared_ptr<Channel> channel):
-stub_(KeyValueService::NewStub(channel)) {
-    auto now = std::chrono::system_clock::now();
-    this->initial_timestamp = now.time_since_epoch().count();
-}
+KeyValueService_client::KeyValueService_client
+(std::shared_ptr<Channel> channel): stub_(KeyValueService::NewStub(channel)) {}
 
-std::string KeyValueService_client::store_value(const std::string& key) {
+std::string KeyValueService_client::store_value(const std::string& key,
+                                                const std::string& payload) {
     StoreValueRequest request;
 
     Value* val = new Value();
-    auto now = std::chrono::system_clock::now();
-    double timestamp = now.time_since_epoch().count() -
-                       this->initial_timestamp;
-    std::cout << timestamp << std::endl;
-    double sin_value = sin(timestamp);
-    val->set_payload(std::to_string(sin_value));
+
+    val->set_payload(payload);
 
     request.set_allocated_value(val);
     request.set_key(key);

@@ -17,9 +17,9 @@ using data_transfer_api::StoreValueRequest;
 
 class KeyValueService_client {
 public:
-    KeyValueService_client (std::shared_ptr<Channel> channel);
+    KeyValueService_client (std::shared_ptr<Channel>);
 
-    std::string store_value(const std::string& key);
+    std::string store_value(const std::string&, const std::string&);
 
 private:
     double initial_timestamp;

@@ -18,14 +18,16 @@ void timer_start(std::function<void(void)> func, unsigned int interval) {
 }
 
 void driver_generate(unsigned int rps, const std::string& ip) {
-    const char* SERVER_ADDR = "127.0.0.1:1234";
+    const char* GRPC_SERVER_ADDR = "127.0.0.1:1234";
+    const unsigned int interval = 1000 / rps;
     KeyValueService_client client(
-            grpc::CreateChannel(SERVER_ADDR,
+            grpc::CreateChannel(GRPC_SERVER_ADDR,
                                 grpc::InsecureChannelCredentials()));
-    unsigned int interval = 1000 / rps;
-    SNMPClient(ip, "public").send_request();
-    timer_start([&client]() -> void {
-                    client.store_value("123");
+    timer_start([&client, &ip]() -> void {
+        std::vector<std::string> resp = SNMPClient(ip, "public").send_request();
+        for (auto& str : resp) {
+            client.store_value(ip, str);
+        }
                 }
             , interval);
     while (true);

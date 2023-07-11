@@ -2,6 +2,9 @@
 // Created by a1ef0 on 7/9/23.
 //
 
+#include <stdexcept>
+#include <vector>
+
 #include "SNMP_client.h"
 
 SNMPClient::SNMPClient(const std::string& peer_name,
@@ -19,7 +22,7 @@ SNMPClient::SNMPClient(const std::string& peer_name,
 }
 
 
-void
+std::vector<std::string>
 SNMPClient::send_request(const std::string& oid_string) {
     oid anOID[MAX_OID_LEN];
     size_t anOID_len;
@@ -40,12 +43,12 @@ SNMPClient::send_request(const std::string& oid_string) {
 
     if (!snmp_parse_oid(oid_string.c_str(), anOID, &anOID_len)) {
         snmp_perror(oid_string.c_str());
-        exit(1);
+        throw std::invalid_argument{"Invalid OID string!"};
     }
     snmp_add_null_var(pdu, anOID, anOID_len);
 
     status = snmp_synch_response(ss, pdu, &response);
-
+    std::vector<std::string> response_strings;
     if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR) {
 
         for(vars = response->variables; vars; vars = vars->next_variable)
@@ -56,6 +59,7 @@ SNMPClient::send_request(const std::string& oid_string) {
                 char *sp = (char *)malloc(1 + vars->val_len);
                 memcpy(sp, vars->val.string, vars->val_len);
                 sp[vars->val_len] = '\0';
+                response_strings.emplace_back(sp);
                 printf("value #%d is a string: %s\n", count++, sp);
                 free(sp);
             }
@@ -77,4 +81,6 @@ SNMPClient::send_request(const std::string& oid_string) {
     if (response)
         snmp_free_pdu(response);
     snmp_close(ss);
+
+    return response_strings;
 }
