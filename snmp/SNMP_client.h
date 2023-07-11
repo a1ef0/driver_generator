@@ -2,8 +2,8 @@
 // Created by a1ef0 on 7/9/23.
 //
 
-#ifndef DRIVER_GENERATOR_SNMPCLIENT_H
-#define DRIVER_GENERATOR_SNMPCLIENT_H
+#ifndef DRIVER_GENERATOR_SNMP_CLIENT_H
+#define DRIVER_GENERATOR_SNMP_CLIENT_H
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
@@ -22,4 +22,4 @@ private:
 };
 
 
-#endif //DRIVER_GENERATOR_SNMPCLIENT_H
+#endif //DRIVER_GENERATOR_SNMP_CLIENT_H

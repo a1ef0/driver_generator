@@ -1,18 +1,12 @@
 # Minimum CMake required
 cmake_minimum_required(VERSION 3.13)
 
-project(driver VERSION 0.0.1 LANGUAGES CXX)
+project(driver VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
-# set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-find_library(NETSNMP "netsnmp")
-add_compile_options(-Wall -Wextra -Wpedantic)
 
 set(proto_name data_transfer_api)
-# set(CMAKE_CXX_COMPILER /usr/bin/clang++)
-# set(CMAKE_C_COMPILER /usr/bin/clang)
-# message("${CMAKE_CURRENT_SOURCE_DIR}/../snmp/")
 
 # Get proto files
 get_filename_component(proto "../protos/${proto_name}.proto" ABSOLUTE)
@@ -21,7 +15,7 @@ get_filename_component(proto_dir "${proto}" DIRECTORY)
 # Generate source files
 set(proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.pb.cc")
 set(proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.pb.h")
-set(grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.grpc.pb.cc")
+set(grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.grpc.pb.cc" key_value_service_client.cc)
 set(grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/${proto_name}.grpc.pb.h")
 add_custom_command(
     OUTPUT "${proto_srcs}" "${proto_hdrs}" "${grpc_srcs}" "${grpc_hdrs}"
@@ -34,21 +28,9 @@ add_custom_command(
     DEPENDS "${proto}"
 )
 
-set(targets "${proto_name}_client")
+set(target "key_value_service_client")
 
 # Include generated *.pb.h files
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../snmp/)
-foreach(target ${targets})
-    add_executable(${target} "${target}.cc" ${proto_srcs} ${grpc_srcs} ../snmp/SNMPClient.cc ../snmp/SNMPClient.h)
-    target_link_libraries(${target} PRIVATE ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${NETSNMP})
-    # Cannot do this because these directories are not available during CMake "compile time"
-    # target_include_directories(${proto_hdrs} ${grpc_hdrs})
-endforeach()
-set(CompileCommands "${CMAKE_BINARY_DIR}/compile_commands.json")
-
-#if (EXISTS ${CompileCommands})
-#    message("File ${CompileCommands} does not exist")
-#else()
-#    message(STATUS "copying compile_commands to ../grpc/compile_commands.json")
-#    file(COPY_FILE ${CompileCommands} ${CMAKE_BINARY_DIR}/../driver_generator/grpc/compile_commands.json ONLY_IF_DIFFERENT)
-#endif()
+add_library(${target} OBJECT STATIC "${target}.cc" ${proto_srcs} ${grpc_srcs})
+set(_PROTOBUF_INCLUDES ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
+include_directories(${target} INTERFACE ${CMAKE_CURRENT_BINARY_DIR})

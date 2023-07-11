@@ -2,7 +2,7 @@
 // Created by a1ef0 on 7/9/23.
 //
 
-#include "SNMPClient.h"
+#include "SNMP_client.h"
 
 SNMPClient::SNMPClient(const std::string& peer_name,
                        const std::string& community_name) {
