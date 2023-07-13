@@ -77,7 +77,6 @@ SNMPClient::send_request(const std::string& oid_string) {
             snmp_sess_perror("snmp_driver", ss);
     }
 
-
     if (response)
         snmp_free_pdu(response);
     snmp_close(ss);
