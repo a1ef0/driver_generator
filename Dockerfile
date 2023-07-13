@@ -33,7 +33,7 @@ RUN cd /tmp && \
 RUN ls && pwd
 
 RUN export NUM_JOBS=$([ $(uname) = 'Linux' ] && \
-                   lscpu -p | egrep -v '^#' | wc -l) \
+        lscpu -p | egrep -v '^#' | wc -l) && \
     cd /tmp/grpc && \
     mkdir -p cmake/build && \
     cd cmake/build && \
