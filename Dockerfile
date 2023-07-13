@@ -1,7 +1,6 @@
 FROM ubuntu:20.04
 
 ARG GPRC_VERSION=1.56.0
-ARG NUM_JOBS=12
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -33,7 +32,9 @@ RUN cd /tmp && \
 
 RUN ls && pwd
 
-RUN cd /tmp/grpc && \
+RUN export NUM_JOBS=$([ $(uname) = 'Linux' ] && \
+                   lscpu -p | egrep -v '^#' | wc -l) \
+    cd /tmp/grpc && \
     mkdir -p cmake/build && \
     cd cmake/build && \
     cmake -DgRPC_INSTALL=ON \
