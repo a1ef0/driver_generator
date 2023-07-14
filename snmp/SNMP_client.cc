@@ -7,6 +7,8 @@
 
 #include "SNMP_client.h"
 
+#undef DEBUG
+
 SNMPClient::SNMPClient(const std::string& peer_name,
                        const std::string& community_name) {
     init_snmp("snmp_driver");
@@ -60,7 +62,9 @@ SNMPClient::send_request(const std::string& oid_string) {
                 memcpy(sp, vars->val.string, vars->val_len);
                 sp[vars->val_len] = '\0';
                 response_strings.emplace_back(sp);
+#ifdef DEBUG
                 printf("value #%d is a string: %s\n", count++, sp);
+#endif
                 free(sp);
             }
             else

@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <thread>
+#include <format>
 
 #include "grpc/key_value_service_client.h"
 #include "snmp/SNMP_client.h"
@@ -17,32 +18,50 @@ void timer_start(std::function<void(void)> func, unsigned int interval) {
     }).detach();
 }
 
-void driver_generate(unsigned int rps, const std::string& ip) {
-    const char* GRPC_SERVER_ADDR = "127.0.0.1:1234";
+void driver_generate(unsigned int rps, const std::string& ip,
+                     const std::string& grpc_server_addr,
+                     const std::string& sensor_name,
+                     const std::string& oid = ".1.3.6.1.2.1.1.1.0") {
     const unsigned int interval = 1000 / rps;
     KeyValueService_client client(
-            grpc::CreateChannel(GRPC_SERVER_ADDR,
+            grpc::CreateChannel(grpc_server_addr,
                                 grpc::InsecureChannelCredentials()));
-    timer_start([&client, &ip]() -> void {
-        std::vector<std::string> resp = SNMPClient(ip, "public").send_request();
+    timer_start([&client, &ip, &sensor_name, &oid]() -> void {
+        std::string key = std::format("SNMP_{}_{}", sensor_name, ip);
+        std::cout << "KEY: " << key << std::endl;
+        std::vector<std::string> resp =
+                SNMPClient(ip, "public").send_request(oid);
         for (auto& str : resp) {
-            client.store_value(ip, str);
-        }
-                }
-            , interval);
+            std::string val = std::format("{} = {}", oid, str);
+            std::cout << "VALUE:" << val << std::endl;
+            std::cout << client.store_value(ip, str) << std::endl;
+        }} , interval);
     while (true);
 }
 
 int main(int argc, char** argv) {
 
-    if (argc != 3) {
-        std::cout << "Usage: " << argv[0] << " <requests per second>"
-                  << " <remote_snmp_client_ip>" << std::endl;
+    if (argc != 5) {
+        std::cout << "Usage: " << argv[0] << " <sensor_id> " <<
+        " <requests per second>" << " <remote_snmp_client_ip>"
+        << " <remote_grpc_server_addr>" << std::endl;
         return 0;
     }
-    long rps = std::stol(argv[1]);
-    std::string ip = argv[2];
-    driver_generate(rps, ip);
+    std::string sensor_id = argv[1];
+    long rps;
+    try {
+        rps = std::stol(argv[2]);
+    } catch (std::invalid_argument& e) {
+        std::cout << "Invalid parameter for rps!\n";
+        return 1;
+    } catch (std::out_of_range& e) {
+        std::cout << "Invalid parameter for rps!\n";
+        return 1;
+    }
+    std::string ip = argv[3];
+    std::string grpc_server_addr = argv[4];
+
+    driver_generate(rps, ip, grpc_server_addr, sensor_id);
 
     return 0;
 }

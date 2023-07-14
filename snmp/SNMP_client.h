@@ -25,7 +25,7 @@ public:
      * @throws std::invalid_argument if the oid is invalid
      */
     std::vector<std::string>
-    send_request(const std::string& oid = ".1.3.6.1.2.1.1.1.0");
+    send_request(const std::string& oid);
 private:
     netsnmp_session session;
     netsnmp_session *ss;
