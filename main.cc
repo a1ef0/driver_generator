@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <thread>
-#include <format>
 
 #include "grpc/key_value_service_client.h"
 #include "snmp/SNMP_client.h"
@@ -27,12 +26,12 @@ void driver_generate(unsigned int rps, const std::string& ip,
             grpc::CreateChannel(grpc_server_addr,
                                 grpc::InsecureChannelCredentials()));
     timer_start([&client, &ip, &sensor_name, &oid]() -> void {
-        std::string key = std::format("SNMP_{}_{}", sensor_name, ip);
+        std::string key = "SNMP_" + sensor_name + "_" + ip;
         std::cout << "KEY: " << key << std::endl;
         std::vector<std::string> resp =
                 SNMPClient(ip, "public").send_request(oid);
         for (auto& str : resp) {
-            std::string val = std::format("{} = {}", oid, str);
+            std::string val = oid + " = " + str;
             std::cout << "VALUE:" << val << std::endl;
             std::cout << client.store_value(ip, str) << std::endl;
         }} , interval);
