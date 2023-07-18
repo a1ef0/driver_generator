@@ -34,3 +34,16 @@ target_include_directories(driver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/snmp ${_PR
 add_dependencies(driver key_value_service_client)
 target_sources(driver PRIVATE main.cc)
 target_link_libraries(driver PUBLIC ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${NETSNMP})
+
+
+enable_testing()
+
+find_package(GTest REQUIRED)
+message(STATUS "Using Gtest ${GTest_VERSION}")
+#find_package(GMock REQUIRED)
+
+add_executable(unit_tests snmp/SNMP_client.h snmp/SNMP_client.cc $<TARGET_OBJECTS:key_value_service_client>)
+target_include_directories(unit_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/snmp ${_PROTOBUF_INCLUDES})
+add_dependencies(unit_tests key_value_service_client)
+target_sources(unit_tests PRIVATE grpc/key_value_service_client_Unit_test.cpp)
+target_link_libraries(unit_tests PUBLIC ${_REFLECTION} ${_GRPC_GRPCPP} ${_PROTOBUF_LIBPROTOBUF} ${NETSNMP} GTest::Main GTest::GTest gmock)

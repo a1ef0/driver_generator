@@ -50,6 +50,9 @@ RUN export PATH="~/.local/bin:$PATH"
 # protoc
 RUN apt-get install -y protobuf-compiler
 
+# tests
+RUN apt-get -y install libgtest-dev
+
 WORKDIR /app
 
 COPY grpc/ ./grpc/
@@ -57,8 +60,6 @@ COPY protos/ ./protos/
 COPY snmp/ ./snmp/
 COPY main.cc .
 COPY CMakeLists.txt ./
-
-# RUN export CMAKE_PREFIX_PATH=~/.local/include:$CMAKE_PREFIX_PATH
 
 RUN cmake -B build -DCMAKE_INSTALL_PREFIX=~/.local/ -S ./ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-I/root/.local/include"
 RUN cmake --build build --parallel --target driver
