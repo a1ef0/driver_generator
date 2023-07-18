@@ -2,8 +2,8 @@
 // Created by anastasia on 12.07.23.
 //
 #include "key_value_service_client.h"
-#include "../build/grpc/data_transfer_api.grpc.pb.h"
-#include "../build/grpc/data_transfer_api.pb.h"
+#include "data_transfer_api.grpc.pb.h"
+#include "data_transfer_api.pb.h"
 
 #include <gtest/gtest.h>
 #include <iostream>
