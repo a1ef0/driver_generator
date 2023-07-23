@@ -8,6 +8,8 @@
 #include "grpc/key_value_service_client.h"
 #include "snmp/SNMP_client.h"
 
+const int START_INTERVAL = 10000;
+
 void timer_start(std::function<void(void)> func, unsigned int interval) {
     std::thread([func, interval]() {
         while (true) {
@@ -60,6 +62,7 @@ int main(int argc, char** argv) {
     std::string ip = argv[3];
     std::string grpc_server_addr = argv[4];
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(START_INTERVAL));
     driver_generate(rps, ip, grpc_server_addr, sensor_id);
 
     return 0;
